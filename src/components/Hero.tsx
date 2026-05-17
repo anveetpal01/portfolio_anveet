@@ -104,18 +104,30 @@ export default function Hero() {
                   transition={{ duration: 0.4, ease: "easeOut" }}
                   className="inline-block text-foreground"
                 >
-                  {personal.roles[roleIndex]}
+                  {personal.roles[roleIndex].title}
                 </motion.span>
               </AnimatePresence>
             </span>
           </motion.div>
 
-          <motion.p
+          <motion.div
             variants={item}
-            className="mt-8 max-w-xl text-base leading-relaxed text-muted md:text-lg"
+            className="relative mt-8 min-h-[3.5rem] max-w-xl md:min-h-[4rem]"
           >
-            {personal.tagline}
-          </motion.p>
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={roleIndex}
+                initial={reduce ? false : { opacity: 0, filter: "blur(12px)" }}
+                animate={{ opacity: 1, filter: "blur(0px)" }}
+                exit={reduce ? undefined : { opacity: 0, filter: "blur(12px)" }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                style={{ willChange: "filter" }}
+                className="text-base leading-relaxed text-muted md:text-lg"
+              >
+                {personal.roles[roleIndex].brief}
+              </motion.p>
+            </AnimatePresence>
+          </motion.div>
 
           <motion.div
             variants={item}

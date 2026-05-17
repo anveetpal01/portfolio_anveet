@@ -130,12 +130,28 @@ export interface SocialLink {
 export const personal = {
   firstName: "Anveet",
   lastName: "Pal",
-  /** Shown rotating in the hero. */
+  /** Shown rotating in the hero — each role's brief slides in sync with it. */
   roles: [
-    "Python Developer",
-    "Computer Vision Engineer",
-    "Backend Developer",
-    "ML / Data Analytics",
+    {
+      title: "Python Developer",
+      brief:
+        "Building clean backend, automation and scripting that holds up in production.",
+    },
+    {
+      title: "Computer Vision Engineer",
+      brief:
+        "Real-time detection, tracking and counting from live camera streams.",
+    },
+    {
+      title: "Backend Developer",
+      brief:
+        "REST APIs with FastAPI, Flask, Django and .NET — auth, validation and error handling.",
+    },
+    {
+      title: "ML / Data Analytics",
+      brief:
+        "Training models and turning raw data into decisions with EDA and BI.",
+    },
   ],
   tagline:
     "Python developer building clean backend, automation and computer-vision systems.",
@@ -212,19 +228,28 @@ export const disciplines: { title: string; desc: string }[] = [
  * taken from your resume periods; tweak any you want more precise. */
 export const projects: Project[] = [
   {
-    id: "traffic-intelligence",
-    slug: "real-time-traffic-intelligence-system",
-    title: "Real-Time Traffic Intelligence System",
+    id: "cctv-vehicle-counter",
+    slug: "cctv-vehicle-counter",
+    title: "CCTV Vehicle Counter",
     category: "Development",
     year: "2026",
     blurb:
-      "Real-time computer-vision pipeline that detects, tracks and counts multiple object classes from live camera streams with low-latency, GPU-accelerated inference.",
+      "Real-time CCTV computer-vision pipeline that detects, tracks and counts vehicles from live camera streams with low-latency, GPU-accelerated inference.",
     tags: ["Computer Vision", "Python", "GPU Inference", "Real-time", "Tracking"],
     href: "",
     featured: true,
+    media: [
+      {
+        type: "video",
+        url: "https://youtu.be/58bdAUT59jk",
+        provider: "youtube",
+        thumbnail: "/work/cctv-vehicle-counter/poster.jpg",
+        alt: "CCTV Vehicle Counter — live vehicle detection and counting demo",
+      },
+    ],
     caseStudy: {
       summary:
-        "A real-time multi-camera computer-vision system for traffic analysis, built at Miraigate Technology.",
+        "A real-time CCTV vehicle-counting computer-vision system, built at Miraigate Technology.",
       role: "Built as a Python Developer at Miraigate Solutions, working across coding, debugging and testing within a fast-paced startup team.",
       sections: [
         {

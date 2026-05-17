@@ -48,7 +48,7 @@ export default function Cursor() {
     <>
       <motion.div
         aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[70]"
+        className="pointer-events-none fixed left-0 top-0 z-[2147483647]"
         style={{ x: ringX, y: ringY }}
       >
         <motion.span
@@ -66,7 +66,7 @@ export default function Cursor() {
 
       <motion.div
         aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[70]"
+        className="pointer-events-none fixed left-0 top-0 z-[2147483647]"
         style={{ x: dotX, y: dotY }}
       >
         <span className="-ml-[3px] -mt-[3px] block h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_12px_2px_var(--color-accent)]" />
