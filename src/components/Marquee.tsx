@@ -13,10 +13,10 @@ export default function Marquee() {
       <div className="flex w-max animate-marquee gap-8 whitespace-nowrap pr-8">
         {row.map((skill, i) => (
           <span key={`a-${i}`} className="flex items-center gap-8">
-            <span className="text-4xl font-semibold tracking-tight text-foreground md:text-6xl">
+            <span className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl md:text-6xl">
               {skill}
             </span>
-            <span className="text-2xl text-accent md:text-4xl">✦</span>
+            <span className="text-2xl text-accent sm:text-3xl md:text-4xl">✦</span>
           </span>
         ))}
       </div>
@@ -24,10 +24,10 @@ export default function Marquee() {
       <div className="flex w-max animate-marquee-rev gap-8 whitespace-nowrap pr-8">
         {row.map((skill, i) => (
           <span key={`b-${i}`} className="flex items-center gap-8">
-            <span className="text-4xl font-semibold tracking-tight text-stroke md:text-6xl">
+            <span className="text-4xl font-semibold tracking-tight text-stroke sm:text-5xl md:text-6xl">
               {skill}
             </span>
-            <span className="text-2xl text-muted md:text-4xl">✦</span>
+            <span className="text-2xl text-muted sm:text-3xl md:text-4xl">✦</span>
           </span>
         ))}
       </div>

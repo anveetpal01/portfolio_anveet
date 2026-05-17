@@ -67,7 +67,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-16 flex items-center justify-between border-t border-line pt-8">
+        <div className="mt-16 flex flex-col items-start gap-4 border-t border-line pt-8 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-mono text-xs text-faint">
             © {year} {personal.firstName} {personal.lastName}. All rights
             reserved.
@@ -88,7 +88,7 @@ export default function Footer() {
       {/* Oversized wordmark */}
       <div
         aria-hidden
-        className="select-none px-6 pb-6 lg:px-10"
+        className="select-none overflow-hidden px-6 pb-6 lg:px-10"
       >
         <div className="text-stroke text-[clamp(3rem,17vw,15rem)] font-bold leading-[0.8] tracking-tighter">
           {personal.lastName.toUpperCase()}

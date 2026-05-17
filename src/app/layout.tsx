@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { personal } from "@/lib/content";
 import Cursor from "@/components/Cursor";
+import TouchGlow from "@/components/TouchGlow";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +49,7 @@ export default function RootLayout({
     >
       <body className="grain min-h-screen bg-background text-foreground antialiased">
         <Cursor />
+        <TouchGlow />
         {children}
       </body>
     </html>

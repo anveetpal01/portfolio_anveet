@@ -81,7 +81,7 @@ export default function Hero() {
 
           <motion.h1
             variants={item}
-            className="mt-8 text-[clamp(3rem,13vw,11.5rem)] font-semibold leading-[0.86] tracking-[-0.04em]"
+            className="mt-8 text-[clamp(3.25rem,13vw,11.5rem)] font-semibold leading-[0.86] tracking-[-0.04em]"
           >
             <span className="block text-foreground">
               {personal.firstName}
