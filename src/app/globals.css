@@ -1,26 +1,219 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ===========================================================================
+ *  Design tokens  (Tailwind v4 — CSS-first config)
+ *  These generate utilities like `bg-background`, `text-accent`, `border-line`
+ *  AND are available as raw CSS vars: var(--color-accent), etc.
+ * ======================================================================== */
+@theme {
+  --color-background: #080809;
+  --color-surface: #0e0e10;
+  --color-elevated: #151518;
+  --color-foreground: #f4f4f5;
+  --color-muted: #8a8a93;
+  --color-faint: #5a5a62;
+  --color-line: #232327;
+
+  /* Bold signature palette */
+  --color-accent: #c8ff3d; /* acid lime */
+  --color-accent-soft: #e6ff9c;
+  --color-violet: #8b5cf6;
+  --color-pink: #ec4899;
+  --color-cyan: #22d3ee;
+
+  /* Animations */
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-marquee-rev: marquee-rev 38s linear infinite;
+  --animate-float: float 9s ease-in-out infinite;
+  --animate-pulse-slow: pulse-slow 6s ease-in-out infinite;
+  --animate-spin-slow: spin 18s linear infinite;
+  --animate-shimmer: shimmer 2.6s linear infinite;
 }
 
+/* Map next/font CSS variables to Tailwind's font utilities. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes marquee-rev {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-26px) scale(1.04); }
+}
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.75; }
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* ===========================================================================
+ *  Base
+ * ======================================================================== */
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    color-scheme: dark;
+  }
+
+  *,
+  *::before,
+  *::after {
+    border-color: var(--color-line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: #050505;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-background);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-line);
+    border-radius: 9999px;
+    border: 2px solid var(--color-background);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-faint);
+  }
+
+  /* Hide the default cursor on devices that have a fine pointer so the
+     custom cursor can take over. Touch devices keep the native behaviour. */
+  @media (hover: hover) and (pointer: fine) {
+    *,
+    *::before,
+    *::after {
+      cursor: none;
+    }
+    /* Keep a usable text caret in the contact form fields. */
+    input,
+    textarea,
+    select,
+    [contenteditable="true"] {
+      cursor: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ===========================================================================
+ *  Utilities
+ * ======================================================================== */
+@layer utilities {
+  /* Gradient display text */
+  .text-gradient {
+    background-image: linear-gradient(
+      110deg,
+      var(--color-foreground) 0%,
+      var(--color-foreground) 40%,
+      var(--color-accent) 70%,
+      var(--color-violet) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-stroke {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--color-faint);
+  }
+
+  /* Animated shimmer text used for small labels */
+  .text-shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--color-muted) 0%,
+      var(--color-foreground) 50%,
+      var(--color-muted) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: var(--animate-shimmer);
+  }
+
+  /* Subtle dotted grid background */
+  .bg-grid {
+    background-image: radial-gradient(
+      var(--color-line) 1px,
+      transparent 1px
+    );
+    background-size: 34px 34px;
+  }
+
+  /* Film-grain / noise overlay */
+  .grain::after {
+    content: "";
+    position: fixed;
+    inset: -50%;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.16;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .mask-fade-x {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 12%,
+      #000 88%,
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 12%,
+      #000 88%,
+      transparent
+    );
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 80px -20px var(--color-accent);
+  }
 }
