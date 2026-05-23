@@ -1,3 +1,5 @@
+import { promises as fs } from "fs";
+import path from "path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,6 +10,17 @@ import Footer from "@/components/Footer";
 import { Reveal } from "@/components/ui/Reveal";
 import { MetricsGrid } from "@/components/charts/MetricsGrid";
 import { CaseStudyGallery } from "@/components/work/CaseStudyGallery";
+import { Markdown } from "@/components/Markdown";
+import { findTechOrSkill } from "@/lib/lookup";
+
+async function loadDoc(docFile: string): Promise<string | null> {
+  try {
+    const p = path.join(process.cwd(), "src/content/case-studies", docFile);
+    return await fs.readFile(p, "utf8");
+  } catch {
+    return null;
+  }
+}
 
 // Prerender every project page at build time (static).
 export function generateStaticParams() {
@@ -62,6 +75,8 @@ export default async function CaseStudyPage({
   if (!project) notFound();
 
   const cs = project.caseStudy;
+  // Read the optional deep-dive Markdown at build time (static).
+  const docContent = cs?.docFile ? await loadDoc(cs.docFile) : null;
 
   return (
     <>
@@ -150,14 +165,33 @@ export default async function CaseStudyPage({
                   Tech stack
                 </h2>
                 <div className="flex flex-wrap gap-2">
-                  {cs.techStack.map((t) => (
-                    <span
-                      key={t}
-                      className="rounded-md border border-line bg-surface px-3 py-1.5 font-mono text-xs text-muted"
-                    >
-                      {t}
-                    </span>
-                  ))}
+                  {cs.techStack.map((t) => {
+                    const hit = findTechOrSkill(t);
+                    if (hit) {
+                      return (
+                        <Link
+                          key={t}
+                          href={hit.href}
+                          data-cursor
+                          className="group inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-3 py-1.5 font-mono text-xs text-muted transition-colors hover:border-accent hover:text-accent"
+                        >
+                          {t}
+                          <ArrowUpRight
+                            size={11}
+                            className="opacity-0 transition-opacity group-hover:opacity-100"
+                          />
+                        </Link>
+                      );
+                    }
+                    return (
+                      <span
+                        key={t}
+                        className="rounded-md border border-line bg-surface px-3 py-1.5 font-mono text-xs text-muted"
+                      >
+                        {t}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             ) : null}
@@ -168,6 +202,17 @@ export default async function CaseStudyPage({
                   Results & numbers
                 </h2>
                 <MetricsGrid metrics={cs.metrics} charts={cs.charts} />
+              </div>
+            ) : null}
+
+            {docContent ? (
+              <div className="border-t border-line py-10">
+                <h2 className="mb-2 font-mono text-xs uppercase tracking-[0.3em] text-accent">
+                  Technical deep-dive
+                </h2>
+                <Reveal>
+                  <Markdown>{docContent}</Markdown>
+                </Reveal>
               </div>
             ) : null}
           </div>

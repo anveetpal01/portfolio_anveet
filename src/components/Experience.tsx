@@ -1,4 +1,5 @@
-import { ArrowDownToLine } from "lucide-react";
+import Link from "next/link";
+import { ArrowDownToLine, ArrowUpRight } from "lucide-react";
 import { experience, personal } from "@/lib/content";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -49,6 +50,20 @@ export default function Experience() {
                     </li>
                   ))}
                 </ul>
+
+                {job.slug ? (
+                  <Link
+                    href={`/company/${job.slug}`}
+                    data-cursor
+                    className="group/cs mt-6 inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.15em] text-accent"
+                  >
+                    More about {job.company}
+                    <ArrowUpRight
+                      size={15}
+                      className="transition-transform group-hover/cs:translate-x-0.5 group-hover/cs:-translate-y-0.5"
+                    />
+                  </Link>
+                ) : null}
               </Reveal>
             ))}
           </div>

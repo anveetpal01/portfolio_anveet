@@ -4,25 +4,23 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 /**
- * The touch-device counterpart to the desktop custom cursor: on every tap,
- * swipe or scroll it flares a soft smoky "blink" in the logo accent colour
+ * The touch-device counterpart to the desktop custom cursor: on every tap or
+ * swipe it flares a soft smoky "blink" in the logo accent colour
  * (var(--color-accent), #c8ff3d) at the touch point, then fades.
  *
- * Runs only on coarse-pointer (touch) devices and never when the user asks
- * for reduced motion — desktop already has the cursor and is untouched.
- * It sits above every overlay (Lightbox, mobile menu) so it is consistent
- * everywhere, and is pointer-events-none so it never blocks taps or scroll.
+ * Runs only on touch devices and never when the user asks for reduced motion.
+ * Sits above every overlay (Lightbox, mobile menu) and is `pointer-events-none`
+ * so it never blocks taps. Scroll spawning is intentionally disabled — it
+ * caused jank on mid-range phones while adding little to the effect.
  */
 interface Blip {
   id: number;
   x: number;
   y: number;
-  /** Scroll-spawned blips are softer (bigger, fainter). */
-  soft: boolean;
 }
 
-const MAX_BLIPS = 14;
-const BLIP_MS = 650;
+const MAX_BLIPS = 16;
+const BLIP_MS = 820;
 
 export default function TouchGlow() {
   const [enabled, setEnabled] = useState(false);
@@ -31,7 +29,6 @@ export default function TouchGlow() {
   const idRef = useRef(0);
   const lastPos = useRef<{ x: number; y: number } | null>(null);
   const lastMove = useRef(0);
-  const lastScroll = useRef(0);
 
   useEffect(() => {
     // Robust touch detection (works on real phones AND DevTools device mode,
@@ -43,11 +40,11 @@ export default function TouchGlow() {
 
     setEnabled(true);
 
-    const spawn = (x: number, y: number, soft: boolean) => {
+    const spawn = (x: number, y: number) => {
       lastPos.current = { x, y };
       const id = ++idRef.current;
       setBlips((prev) => {
-        const next = [...prev, { id, x, y, soft }];
+        const next = [...prev, { id, x, y }];
         return next.length > MAX_BLIPS ? next.slice(next.length - MAX_BLIPS) : next;
       });
       window.setTimeout(() => {
@@ -57,7 +54,7 @@ export default function TouchGlow() {
 
     const onTouchStart = (e: TouchEvent) => {
       const t = e.touches[0];
-      if (t) spawn(t.clientX, t.clientY, false);
+      if (t) spawn(t.clientX, t.clientY);
     };
 
     const onTouchMove = (e: TouchEvent) => {
@@ -68,27 +65,14 @@ export default function TouchGlow() {
       const p = lastPos.current;
       if (p && Math.hypot(t.clientX - p.x, t.clientY - p.y) < 24) return;
       lastMove.current = now;
-      spawn(t.clientX, t.clientY, false);
-    };
-
-    const onScroll = () => {
-      const now = performance.now();
-      if (now - lastScroll.current < 120) return;
-      lastScroll.current = now;
-      const p = lastPos.current ?? {
-        x: window.innerWidth / 2,
-        y: window.innerHeight / 2,
-      };
-      spawn(p.x, p.y, true);
+      spawn(t.clientX, t.clientY);
     };
 
     window.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("touchmove", onTouchMove, { passive: true });
-    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("scroll", onScroll);
     };
   }, []);
 
@@ -101,8 +85,9 @@ export default function TouchGlow() {
     >
       <AnimatePresence>
         {blips.map((b) => {
-          const size = b.soft ? 220 : 150;
-          const drift = (Math.random() - 0.5) * 26;
+          const size = 92;
+          const driftX = (Math.random() - 0.5) * 14;
+          const riseY = 22 + Math.random() * 20; // smoke drifts upward
           return (
             <motion.span
               key={b.id}
@@ -114,23 +99,20 @@ export default function TouchGlow() {
                 height: size,
                 marginLeft: -size / 2,
                 marginTop: -size / 2,
-                // Accent #c8ff3d = rgb(200,255,61). Hardcoded rgba (not
-                // color-mix / CSS var) so it renders on every mobile browser.
+                // Accent #c8ff3d = rgb(200,255,61). Gradient does the heavy
+                // lifting (soft alpha falloff = smoke edges) so the blur can
+                // stay small. Hardcoded rgba for max mobile-browser support.
                 background:
-                  "radial-gradient(circle, rgba(200,255,61,0.75) 0%, rgba(200,255,61,0.25) 45%, rgba(200,255,61,0) 70%)",
-                filter: `blur(${b.soft ? 26 : 18}px)`,
-                mixBlendMode: "screen",
+                  "radial-gradient(circle, rgba(200,255,61,0.5) 0%, rgba(200,255,61,0.14) 38%, rgba(200,255,61,0) 72%)",
+                // Small blur — heavy blur + mix-blend-mode was the main cause
+                // of GPU jank on mid-range phones.
+                filter: "blur(9px)",
                 willChange: "transform, opacity",
               }}
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{
-                scale: b.soft ? 1.35 : 1.5,
-                opacity: b.soft ? 0.32 : 0.55,
-                x: drift,
-                y: -Math.abs(drift),
-              }}
-              exit={{ scale: 1.9, opacity: 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ scale: 0.4, opacity: 0 }}
+              animate={{ scale: 1.05, opacity: 0.38, x: driftX, y: -riseY }}
+              exit={{ scale: 1.45, opacity: 0 }}
+              transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }}
             />
           );
         })}

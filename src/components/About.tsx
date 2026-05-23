@@ -60,7 +60,7 @@ export default function About() {
               </div>
             </div>
             <p className="mt-4 text-center font-mono text-[11px] uppercase tracking-[0.2em] text-faint">
-              ↳ swap with your photo in <span className="text-muted">/public</span>
+              <span className="text-muted"></span>
             </p>
           </Reveal>
         </div>
