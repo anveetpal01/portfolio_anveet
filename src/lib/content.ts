@@ -85,6 +85,57 @@ export interface CaseStudy {
   /** Optional filename under src/content/case-studies/ — when set, the page
    *  reads and renders it as styled Markdown (tables, code blocks, etc.). */
   docFile?: string;
+  /** Optional structured interview-prep block — rendered with themed
+   *  on-brand components (NOT raw Markdown). All sub-fields optional. */
+  interviewPrep?: InterviewPrep;
+}
+
+/* --- Interview prep --------------------------------------------------------
+ * Structured doc rendered with themed components on the case-study page.
+ * Every field is optional so a project can fill only what it has.
+ * ------------------------------------------------------------------------- */
+export interface InterviewPrep {
+  /** Single-sentence headline shown in a quote-box hero. */
+  headline?: string;
+  /** Elevator pitches at different durations, e.g. "15s", "60s", "2-min". */
+  pitches?: { duration: string; text: string }[];
+  /** Motivation / why-this-project Q&A. */
+  motivation?: { q: string; a: string }[];
+  /** Numbered "what the app actually does" steps. */
+  whatItDoes?: string[];
+  /** Architecture: ASCII diagram (preserved monospace) + narrative. */
+  architecture?: { ascii?: string; body?: string };
+  /** Tech-stack table (Layer / Tech / Why). */
+  techStack?: { layer: string; tech: string; why: string }[];
+  /** Named design patterns + short body each. */
+  patterns?: { name: string; body: string }[];
+  /** Implementation deep-dives — each with optional code block + language. */
+  deepDives?: {
+    heading: string;
+    body: string;
+    code?: string;
+    codeLang?: string;
+    /** When true, accordion is open by default (for headline deep-dives). */
+    open?: boolean;
+  }[];
+  /** Headline numbers — labeled metric + value. */
+  numbers?: { metric: string; value: string }[];
+  /** Trade-offs table (Decision / Why I chose it / Alternative). */
+  tradeoffs?: { decision: string; chosen: string; alternative: string }[];
+  /** Likely interview questions + sample answers. */
+  questions?: { q: string; a: string }[];
+  /** Ready-to-tell stories with title + body. */
+  stories?: { title: string; body: string }[];
+  /** Term + meaning pairs. */
+  glossary?: { term: string; meaning: string }[];
+  /** Files-to-LOC cheatsheet (File / LOC / Role). */
+  files?: { file: string; loc: string; role: string }[];
+  /** ASCII whiteboard / mental map (preserved monospace). */
+  whiteboard?: string;
+  /** Italic one-liner quotes to drop in interviews. */
+  oneLiners?: string[];
+  /** Optional source URLs for auditability. */
+  sources?: string[];
 }
 
 export interface Project {
@@ -237,6 +288,388 @@ export const disciplines: { title: string; desc: string }[] = [
  * `charts` in `caseStudy` — they only render if present. `year` values are
  * taken from your resume periods; tweak any you want more precise. */
 export const projects: Project[] = [
+  {
+    id: "offline-ai-coding-agent",
+    slug: "offline-ai-coding-agent",
+    title: "Offline AI Coding Agent",
+    category: "Development",
+    year: "2026",
+    blurb:
+      "A Claude-Code-style coding agent that runs fully on a laptop — plan → act → observe loop, file + shell tools, powered by a local LLM via Ollama, with a hybrid online mode.",
+    tags: [
+      "Python",
+      "Ollama",
+      "Local LLM",
+      "FastAPI",
+      "Agents",
+      "Tool Use",
+    ],
+    href: "",
+    featured: true,
+    // TODO: add GitHub repo link here once published, e.g.
+    // links: [{ label: "Source", href: "https://github.com/anveetpal01/offline-claude", kind: "repo" }],
+    links: [],
+    caseStudy: {
+      summary:
+        "A from-scratch local agent harness — file/edit/run-command tools, plan→act→observe loop, packaged as a CLI + web + desktop app.",
+      problem:
+        "Claude Code is unusable offline (no internet = no model). I wanted a Claude-Code-like coding agent that runs fully on my laptop: takes a query, makes a plan, reads/writes files, runs commands, and iterates.",
+      approach:
+        "The realisation: 'Claude Code' is a harness (plan→act→observe loop + tools) plus a model. Offline you lose the model, not the harness. So I built the harness myself in Python and plugged in the best local model my machine can run, served by Ollama. The LLM layer is abstracted so a cloud client can be added for an optional `--online` mode.",
+      role: "Solo personal project — designed, built, and packaged end-to-end (CLI, FastAPI + WebSocket bridge, pywebview desktop wrapper, PyInstaller bundle).",
+      outcome:
+        "An agent that behaves like a capable junior dev on small, well-scoped tasks — write functions/scripts, small features, run & fix — fully offline on an 8 GB-VRAM laptop, with a clean hybrid switch to a cloud model when the network is back.",
+      sections: [
+        {
+          heading: "How it works",
+          body: "Terminal/web/desktop REPL → user prompt → LLM (Ollama-served qwen3:8b or qwen2.5-coder:7b) → if the response contains a tool call, the harness validates the JSON, executes the tool (read_file / write_file / edit_file / list_dir / run_command), feeds the result back into the conversation, and loops. The system prompt asks the model to plan first, then execute step-by-step.",
+        },
+        {
+          heading: "Tooling & safety",
+          body: "Every file operation is scoped to a chosen project root (paths that escape it are rejected). Shell commands print first and require a Y/n confirmation before running — mirroring Claude Code's permission model. Malformed tool-call JSON triggers a retry with a correction message so small-model flakiness doesn't break the loop.",
+        },
+        {
+          heading: "Three UIs, one agent",
+          body: "Same agent core wired into three front-ends: a Rich-powered terminal REPL (`main.py`), a web UI served by FastAPI + WebSocket (`server.py` + `web/`), and a native-feeling desktop window via pywebview (`desktop.py`). The whole thing bundles into a single Windows executable through PyInstaller.",
+        },
+      ],
+      techStack: [
+        "Python 3",
+        "Ollama",
+        "qwen3:8b / qwen2.5-coder:7b",
+        "FastAPI",
+        "Uvicorn",
+        "WebSocket",
+        "pywebview",
+        "Rich",
+        "OpenAI SDK (hybrid online)",
+        "PyInstaller",
+      ],
+      timeline: "Personal · 2026",
+      // Honest highlight callouts — facts from the spec, not invented benchmarks.
+      metrics: [
+        { label: "Runtime", value: "Offline", delta: "runs locally" },
+        { label: "VRAM target", value: "8 GB" },
+        { label: "Local model size", value: "7–8B", delta: "Q4_K_M" },
+        { label: "Front-ends", value: "3", delta: "CLI · web · desktop" },
+      ],
+      // Full technical deep-dive, curated from his own PLAN.md.
+      docFile: "offline-ai-coding-agent.md",
+      // Themed interview-prep block — rendered with on-brand components
+      // (not raw markdown). Source: his INTERVIEW_PREP.md, transcribed verbatim.
+      interviewPrep: {
+        headline:
+          "A local-first AI coding agent for Windows — three frontends (terminal, web, desktop) on a single Python agent core, with a hot-swappable local/cloud model backend, packaged as a single Windows executable.",
+        pitches: [
+          {
+            duration: "15s",
+            text:
+              "I built a Claude-Code-style coding agent that runs fully offline on Windows. It edits files and runs commands in a chosen project folder. Same agent core drives three UIs — terminal, web, and a native desktop app — and you can hot-swap between a local Ollama model and an OpenRouter cloud model with auto-fallback. Shipped as a single .exe via PyInstaller.",
+          },
+          {
+            duration: "60s",
+            text:
+              "Claude Code is great but useless offline, so I built my own. The interesting part isn't that — it's the architecture. I designed the agent as a pure Python core with two seams: an LLMClient port and an AgentUI port. The core loop emits high-level events ('thinking', 'tool_call', 'tool_result', 'confirm') — adapters render them. That single decision let me ship three frontends on one brain: a Rich-powered CLI, a FastAPI + WebSocket web UI, and a pywebview desktop window — without one `if` statement in the agent. Same on the model side: Ollama for offline (default), OpenRouter for online, swap with one command, auto-fallback if the online one fails. The whole thing bundles to an ~11 MB exe with PyInstaller. Along the way I solved a real problem — small local models sometimes emit tool calls as JSON text instead of using the native channel, so I wrote a streaming JSON-decoder-based fallback parser with brace-repair for truncated outputs.",
+          },
+          {
+            duration: "2-min",
+            text:
+              "I built an offline-first AI coding agent that mimics Claude Code's workflow but runs on a local model. The motivation was simple — I wanted to keep coding when I'm offline, and I wanted to actually understand how an agent works under the hood. So I built the entire harness from scratch in Python. The interesting part is the architecture. The agent core knows nothing about how the user is interacting with it or which model it's talking to. It has two ports — AgentUI for output events, and LLMClient for the model — and the core loop just calls into those interfaces. That decision turned out to be the leverage point of the whole project. The same brain now drives three frontends — a terminal app using Rich, a FastAPI/WebSocket web UI, and a pywebview desktop window — without conditional logic anywhere in the core. On the model side, the same pattern: OllamaClient for local, an OpenAICompatibleClient for any OpenAI-style cloud API. I can switch with one slash command, and if the cloud backend fails mid-turn the agent silently falls back to local — never crashes a conversation. The hardest engineering moment was realising that small local models — specifically 7B-class — sometimes emit tool calls as JSON inside the assistant content rather than using the model's tool-call channel. That breaks the normal agent loop. So I wrote a fallback parser using Python's json.JSONDecoder.raw_decode to find embedded objects, with brace-balancing repair for truncated cases. Same harness now works whether the model uses native tool calling or not. A second 'gotcha' I want to call out: I had two UI views — Chat and Code — sharing one agent. In Chat view I disabled tools, but I forgot the system prompt still told the model 'you have these tools.' Result: the model role-played running Get-Date and hallucinated a date from training data. Diagnosis was straightforward, fix was structural: split into a Chat prompt and a Code prompt, sync them with the view's tools state. That story is the one I like telling — it shows the difference between code working and code being *consistent*. Finally, I packaged it as a Windows app with PyInstaller — single folder, windowed (no console), desktop shortcut, native folder-picker. The .exe is 11.5 MB; the whole bundle is ~48 MB. Ollama still needs to be installed (the model weights aren't bundled — they're 5 GB), but the app auto-starts the Ollama server if it isn't running. If I were to keep going, the next thing would be an in-app settings panel (model + API key without rebuild), then streaming output, then proper multi-file context awareness.",
+          },
+        ],
+        motivation: [
+          {
+            q: "Why this project?",
+            a: "Claude Code dies offline. I wanted to (a) keep coding offline, (b) understand how an agent harness actually works by building one.",
+          },
+          {
+            q: "Why not just use Aider / Cline / OpenHands?",
+            a: "They exist and they're good — I tried them. The point of this project was learning by building, not the deliverable. The shipped app is a side benefit.",
+          },
+          {
+            q: "What's wrong with cloud-only?",
+            a: "Rate limits, privacy (free tiers train on your data), and the offline blocker. Local is unlimited and private; cloud is for when you want a bigger brain.",
+          },
+          {
+            q: "Why Windows-first?",
+            a: "That's my machine. The Python core is cross-platform; only the packaging is Windows-specific.",
+          },
+        ],
+        whatItDoes: [
+          "Launch a native window (the .exe).",
+          "Pick a project folder (native folder dialog).",
+          "Pick a mode: Plan / Ask Permissions / Accept Edits / Auto.",
+          "Pick a model: Local (Ollama) or Online (OpenRouter).",
+          "Type a request — the agent plans, edits files, runs commands, iterates.",
+          "Save / restore sessions, switch view between Chat (pure conversation, no tools) and Code (full agent with plan panel).",
+        ],
+        architecture: {
+          ascii: `        Rich CLI            Web UI (browser)        pywebview window
+            |                       |                       |
+            v                       v                       v
+       ConsoleUI               WebUI  <-----  FastAPI  <----+
+            \\                    /
+             \\                  /            (UI adapters)
+              \\                /
+               v              v
+           ┌──────────────────────────┐
+           │   AgentUI  (port)        │
+           ├──────────────────────────┤
+           │   AGENT CORE             │
+           │   loop.py  (the brain)   │
+           │   tools.py (the hands)   │
+           │   modes.py (permissions) │
+           │   prompts.py             │
+           │   context.py (memory)    │
+           ├──────────────────────────┤
+           │   LLMClient  (port)      │
+           └──────────────────────────┘
+                /              \\
+               v                v
+        OllamaClient    OpenAICompatibleClient
+        (local)         (OpenRouter / Groq / Gemini)`,
+          body: "The core idea: the agent never imports `rich` or `websockets` or `openai` directly. It only talks through AgentUI and LLMClient. Everything else is an adapter. This is the classic ports-and-adapters / hexagonal architecture. Drop the term in an interview — it's not pretentious here, it's accurate.",
+        },
+        techStack: [
+          { layer: "Local model", tech: "Ollama + qwen3:8b", why: "Reliable native tool calling under 8 GB VRAM; one-command server; OpenAI-style API" },
+          { layer: "Online model", tech: "OpenRouter (Qwen3-Coder 480B free)", why: "Free, agentic-coder model; OpenAI-compatible — same client code" },
+          { layer: "LLM client", tech: "openai SDK with custom base_url", why: "One SDK reaches OpenRouter / Groq / Gemini / vLLM / anything OpenAI-shaped" },
+          { layer: "Backend language", tech: "Python 3.12", why: "Best ecosystem for LLM/agent work; matches both AI libs and web libs" },
+          { layer: "CLI", tech: "rich", why: "Beautiful panels, spinners, streamed output in the terminal" },
+          { layer: "Web server", tech: "FastAPI + uvicorn", why: "Modern, async-first, native WebSocket support, type-driven" },
+          { layer: "Real-time bridge", tech: "WebSocket", why: "Stream agent events (tool steps, narration, status) live" },
+          { layer: "Desktop window", tech: "pywebview (Edge WebView2 on Windows)", why: "Wraps web UI in a native OS window — no Electron, no Node" },
+          { layer: "Frontend", tech: "Vanilla HTML / CSS / JS", why: "No build step; fully offline; custom Claude-Desktop-style dark theme" },
+          { layer: "Bundling", tech: "PyInstaller (--windowed, --collect-all)", why: "One-folder Windows app, ~48 MB; desktop-shortcut launchable" },
+        ],
+        patterns: [
+          {
+            name: "Ports & adapters (hexagonal)",
+            body: "The agent core has two ports — abstract interfaces it depends on: AgentUI (outbound events) and LLMClient (outbound model call). Each port has multiple adapters: ConsoleUI / WebUI for AgentUI; OllamaClient / OpenAICompatibleClient for LLMClient. The agent compiles and tests without rich, without fastapi, without the openai SDK. They're all plug-ins.",
+          },
+          {
+            name: "Strategy pattern",
+            body: "LLMClient + two interchangeable strategies, swappable at runtime by a /online slash command. The agent doesn't know which one is plugged in.",
+          },
+          {
+            name: "Neutral data model",
+            body: "Conversation history is stored as backend-neutral dicts (role, content, tool_calls:[{id, name, args}], tool results as role:\"tool\"). Each client translates to its wire format at send time — Ollama uses tool_name; OpenAI uses tool_call_id. Ollama takes args as a dict; OpenAI takes them as a JSON-encoded string. That single translation seam unlocks backend hot-swap mid-conversation AND JSON save/load of sessions.",
+          },
+          {
+            name: "Permission policy as a pure function",
+            body: "agent/modes.py::decide(mode, tool_name) -> ALLOW | ASK | BLOCK. No side effects, no state — easy to reason about and unit test.",
+          },
+        ],
+        deepDives: [
+          {
+            heading: "7.1  The agent loop",
+            body: "This is the entire essence of an agent: send → did it call a tool? → run it → feed result back → repeat. Everything else is plumbing.",
+            open: true,
+            codeLang: "py",
+            code: `def run(self, user_input):
+    self.convo.add("user", user_input)
+    schemas = tools.SCHEMAS if self.tools_enabled else None
+    for _ in range(MAX_STEPS):
+        response = self._chat(schemas)               # blocking call
+        calls, narration = resolve(response)         # native or fallback
+        self.convo.add_message(assistant_msg(narration, calls))
+        if narration: self.ui.assistant_text(narration)
+        if not calls: return                         # text => done
+        for call in calls:
+            self._run_one_tool(call)                 # mode-gated`,
+          },
+          {
+            heading: "7.2  Tool calling — native + text fallback parser",
+            body: "Problem: small models (7B-class) sometimes emit tool calls as JSON text in the assistant content instead of using the model's tool-call channel. Solution: after every response, if tool_calls is empty, scan the content with json.JSONDecoder().raw_decode (a real JSON parser, so braces inside string values don't confuse it) and recover any {name, arguments} objects. As a last-resort repair for truncated JSON (missing closing braces, common with token-limit hits), try appending up to two `}` and a quote and reparsing. That bit of resilience is what lets the harness work with weak models too — the agent still gets a structured tool call even when the wire-format failed.",
+            open: true,
+          },
+          {
+            heading: "7.3  Modes — the permission policy",
+            body: "Four modes mirror Claude Code's mode menu exactly. plan: ALLOW reads, BLOCK writes/run. ask_permissions: ALLOW reads, ASK on writes/run. accept_edits: ALLOW reads + writes, ASK on run. auto: ALLOW everything. Implemented as a single pure function consulted before every tool execution.",
+          },
+          {
+            heading: "7.4  Hybrid backend with auto-fallback",
+            body: "A network blip, rate limit, or bad API key never crashes a turn — the agent transparently degrades to the local model.",
+            codeLang: "py",
+            code: `def _chat(self, schemas):
+    try:
+        return self.llm.chat(self.convo.messages, tools=schemas)
+    except Exception as exc:
+        if self.offline_llm and self.llm is not self.offline_llm:
+            self.ui.notice(f"online failed ({exc}); falling back to local.")
+            self.llm = self.offline_llm
+            return self.llm.chat(self.convo.messages, tools=schemas)
+        raise`,
+          },
+          {
+            heading: "7.5  The threading model (the question they'll definitely ask)",
+            body: "Problem: the agent loop is blocking (model call + subprocess calls). FastAPI's WebSocket is async. You can't await a blocking function on the asyncio thread without freezing the whole UI. Solution: four cooperating pieces — (1) Agent runs in a worker thread: await asyncio.to_thread(agent.run, text). (2) Events queued back via thread-safe call: loop.call_soon_threadsafe(out_queue.put_nowait, payload). (3) A sender task drains the queue → WebSocket.send_json. (4) confirm() blocks the worker thread on a threading.Event until the server receives the user's approval message and sets the event with the result. This is the bit that lets the UI stay interactive while the agent is thinking, and lets the user approve / deny mid-loop.",
+          },
+          {
+            heading: "7.6  Path safety",
+            body: "Path.is_relative_to (Python 3.9+) — short, correct, and traversal-proof (../../Windows/System32 resolves out of the root and is rejected).",
+            codeLang: "py",
+            code: `def _safe_path(path):
+    root = config.PROJECT_ROOT.resolve()
+    resolved = (root / path).resolve()
+    if resolved != root and not resolved.is_relative_to(root):
+        raise ValueError(...)
+    return resolved`,
+          },
+          {
+            heading: "7.7  Splitting the system prompt by view (the hallucination story)",
+            body: "Bug: Chat view disabled tools, but the same system prompt was used in both views — it still listed write_file, run_command, etc. So in Chat, the model 'knew' about tools that weren't actually wired, role-played a Get-Date call, and made up a date from its training data ('Wednesday, January 11, 2024'). Classic hallucination — caused by a prompt/capability mismatch, not by the model being bad. Fix: two system prompts. The Code-mode prompt lists tools and tells the model to use them. The Chat-mode prompt explicitly says 'you have NO tools here, you don't know the current date, and you must never claim you ran something.' The view toggle now also swaps the prompt via Conversation.set_system(text). The interview lesson: the model's behaviour is the joint product of its weights AND what you tell it about itself. Tools mismatch with prompt → hallucination.",
+          },
+          {
+            heading: "7.8  Packaging (PyInstaller — the parts that bit me)",
+            body: "Three things had to be right: (1) --add-data \"web;web\" to bundle the static HTML/CSS/JS folder. (2) --collect-all uvicorn webview websockets ollama — these import their submodules dynamically; PyInstaller's static analysis misses them. (3) sys._MEIPASS — server.py resolves WEB_DIR via getattr(sys, 'frozen', False); otherwise the bundled exe can't find the frontend. Result: 11.5 MB exe, 47.6 MB one-folder app, runs without any Python install.",
+            codeLang: "py",
+            code: `if getattr(sys, "frozen", False):
+    WEB_DIR = Path(sys._MEIPASS) / "web"
+else:
+    WEB_DIR = Path(__file__).parent / "web"`,
+          },
+        ],
+        numbers: [
+          { metric: "Source code", value: "~1.2k LOC" },
+          { metric: "Local model", value: "qwen3:8b · 5 GB · Q4" },
+          { metric: "Online model", value: "Qwen3-Coder 480B (35B active)" },
+          { metric: "Built .exe", value: "11.5 MB" },
+          { metric: "One-folder bundle", value: "~48 MB" },
+          { metric: "First-launch RAM", value: "~130 MB" },
+          { metric: "Cold model load", value: "10–30 s" },
+        ],
+        tradeoffs: [
+          { decision: "Local-first", chosen: "Unlimited, free, private", alternative: "Always-cloud — rate-limited and offline-broken" },
+          { decision: "7B–8B local model", chosen: "Fits a laptop GPU", alternative: "70B+ — needs server-grade hardware" },
+          { decision: "Web UI in pywebview", chosen: "Same look as Claude Desktop, full CSS control", alternative: "Native Qt/Tk — heavier code for less polish" },
+          { decision: "One-folder PyInstaller", chosen: "Reliable startup, fewer AV false-positives", alternative: "One-file — slower (unpacks each launch)" },
+          { decision: "Native + text fallback tool parsing", chosen: "Works with both reliable and weak models", alternative: "Strict native-only — breaks 7B coders" },
+          { decision: "Ports & adapters from day 1", chosen: "Three frontends without rewriting the core", alternative: "Inline-everything — fast first, painful later" },
+          { decision: "OpenAI-compatible client (not provider SDKs)", chosen: "One client reaches many providers", alternative: "Per-provider SDKs — code explosion" },
+          { decision: "Mode policy as pure function", chosen: "Trivial to test, single source of truth", alternative: "Inline if-mode checks scattered everywhere" },
+        ],
+        questions: [
+          {
+            q: "How does function calling actually work?",
+            a: "The agent sends the conversation plus a list of JSON-schema function definitions. The model's chat template formats those into a system-level tool description the model can see during decoding. When it wants to act, it emits a structured tool call — either via the model's native tool-call channel (with a name and args dict) or, for weaker models, as JSON text in the assistant content. The harness parses either, executes the named function with the args, appends a tool-role message with the textual result, and loops. The model sees that result on the next turn and either calls another tool or answers in plain text.",
+          },
+          {
+            q: "How do you stream events from a blocking Python function to a WebSocket?",
+            a: "Run the agent in asyncio.to_thread. The agent's UI adapter (WebUI) pushes events into an asyncio.Queue from the worker thread using loop.call_soon_threadsafe(queue.put_nowait, payload). A separate sender coroutine drains the queue and awaits websocket.send_json(...). For mid-loop approvals, confirm() blocks the worker thread on a threading.Event, which the WebSocket receive-loop sets when the user replies.",
+          },
+          {
+            q: "How do you sandbox file operations?",
+            a: "All paths go through _safe_path, which resolves the user-supplied path against the project root and rejects anything not is_relative_to the root. shell=True for command execution is OK only because every command is gated by an explicit user approval in non-auto modes.",
+          },
+          {
+            q: "What if the model hallucinates running a command?",
+            a: "I hit exactly this in Chat mode — the model claimed to run Get-Date and invented a date. Root cause was a prompt/capability mismatch: tools were disabled, but the prompt still listed them, so the model role-played using them. Fix: split into two system prompts (Chat vs Code), and sync the prompt with the view's tools state. In Code mode, the same question now triggers a real Get-Date tool call.",
+          },
+          {
+            q: "What's the hardest bug you debugged on this?",
+            a: "The 7B-coder JSON malformation. The model would emit { \"name\": \"write_file\", \"arguments\": { … \"content\": \"...some code with } in it\" } — sometimes well-formed, sometimes truncated. Naive regex parsing falls over on either. I switched to json.JSONDecoder.raw_decode, which is a real JSON parser that handles nested braces correctly. For truncated outputs, I added a last-resort repair that tries appending up to two close-braces and reparses. That turned a flaky model into a usable one.",
+          },
+          {
+            q: "How would you scale this to many users?",
+            a: "Today it's one-user-per-process (single agent + single WebSocket). Scaling needs three changes: per-session agent isolation (already supported — each WS connection builds a fresh agent), a session-store (already saved as JSON in .oc_sessions/), and process-level horizontal scaling behind a load balancer. The agent core itself is stateless apart from the conversation, so this is mostly a deployment problem.",
+          },
+          {
+            q: "What's missing / what would you do next?",
+            a: "Streaming output (right now I wait for the full model reply before rendering — fine for tool steps, suboptimal for long answers). An in-app settings panel so model and API key are pastable without a rebuild. Per-view conversation isolation (Chat and Code currently share one conversation). And /add file for explicit project-awareness — letting the user pull specific files into context.",
+          },
+          {
+            q: "Why not use LangChain / LlamaIndex?",
+            a: "For learning, the whole point was to NOT use a framework — the abstractions are exactly the thing I wanted to build myself. For production, the tool-use loop is ~80 lines; a framework adds dependencies and a debugging tax without much leverage at this size.",
+          },
+          {
+            q: "How does the agent know when to stop?",
+            a: "A single rule: if the model's reply has no tool calls, that's the final answer for the turn and the loop returns. There's also a MAX_STEPS safety cap (25) so a misbehaving model can't burn forever.",
+          },
+          {
+            q: "How is the conversation persisted across the offline/online toggle?",
+            a: "That's exactly what the neutral message format buys us. The conversation is a list of plain dicts (role, content, tool_calls, tool results with id + name). Each LLM client translates to its wire format at send time. So a turn started on Ollama can be continued on OpenRouter mid-conversation, and vice versa, with no replay logic.",
+          },
+        ],
+        stories: [
+          {
+            title: "The hallucinated date",
+            body: "A model lied about running a command because the prompt lied about what it had access to. Lesson: model behaviour = weights × what you tell it about itself. The fix was structural — split into Chat and Code system prompts so the prompt's claim about tools always matches the view's actual tool state.",
+          },
+          {
+            title: "The fallback parser",
+            body: "Weak local models break the 'native tool-call channel' assumption. Engineering for the actual distribution of model behaviour, not the spec — and using a real streaming JSON decoder (raw_decode) plus a tiny brace-repair pass — turned a flaky model into a reliable one.",
+          },
+          {
+            title: "Three frontends on one core",
+            body: "Designing ports up front turned what would have been three rewrites into three thin adapters. The CLI is ~50 lines. The web frontend ships the same events. Adding the pywebview desktop wrapper after the web UI cost almost nothing — it's just the web UI in an OS window.",
+          },
+          {
+            title: "Auto-fallback, never crash a turn",
+            body: "A one-try/except design choice that makes the agent feel resilient even when the network does not. A bad API key, a rate-limit, a flaky connection — the user sees a one-line notice and the model silently switches to local mid-turn.",
+          },
+        ],
+        glossary: [
+          { term: "Ports & adapters / hexagonal", meaning: "The architecture pattern this project is built on." },
+          { term: "Strategy pattern", meaning: "For the swappable LLMClient." },
+          { term: "ReAct loop", meaning: "Think → act → observe → repeat (what every agent does)." },
+          { term: "Function calling / tool use", meaning: "The model emits a structured call, the harness runs it." },
+          { term: "Native tool channel vs. text emission", meaning: "The failure mode that motivates the fallback parser." },
+          { term: "WebSocket / ASGI / uvicorn", meaning: "Modern async Python web stack." },
+          { term: "sys._MEIPASS", meaning: "PyInstaller's runtime path for bundled files." },
+          { term: "MoE (Mixture of Experts)", meaning: "What Qwen3-Coder uses (480B total, 35B active per token)." },
+          { term: "Q4_K_M quantization", meaning: "4-bit weight format that makes 8B models fit in 8 GB VRAM." },
+          { term: "KV cache / context window", meaning: "Why small models run out of memory on long conversations." },
+        ],
+        files: [
+          { file: "agent/loop.py", loc: "~170", role: "The agent loop + text-fallback tool-call parser" },
+          { file: "agent/llm.py", loc: "~145", role: "LLMClient port + Ollama + OpenAI-compat adapters" },
+          { file: "agent/tools.py", loc: "~200", role: "Tool functions + JSON schemas + path safety" },
+          { file: "agent/modes.py", loc: "~40", role: "The 4-mode permission policy (decide())" },
+          { file: "agent/context.py", loc: "~60", role: "Neutral message history + save/load" },
+          { file: "agent/prompts.py", loc: "~55", role: "Code-mode + Chat-mode system prompts" },
+          { file: "agent/ui_base.py", loc: "~30", role: "The AgentUI interface" },
+          { file: "ui/console_ui.py", loc: "~50", role: "Rich-based terminal adapter" },
+          { file: "ui/web_ui.py", loc: "~55", role: "WebSocket adapter (with confirm() via Event)" },
+          { file: "server.py", loc: "~125", role: "FastAPI app: WS + REST + sessions" },
+          { file: "desktop.py", loc: "~70", role: "pywebview launcher + Ollama auto-start" },
+          { file: "main.py", loc: "~155", role: "CLI REPL with slash commands" },
+          { file: "web/*", loc: "~430", role: "Frontend (index.html, style.css, app.js)" },
+        ],
+        whiteboard: `   user
+    |
+    v
+  [ UI adapter ]   (Rich / Web / Desktop)
+    |  events
+    v
+  AgentUI port
+    |
+    v
+  Agent loop  <-- modes, prompts, context, tools
+    |  chat(messages, tools)
+    v
+  LLMClient port
+    |
+    v
+  [ LLM adapter ]   (Ollama local / OpenAI-compat cloud)
+
+Two ports. Two adapters per port. Done.`,
+        oneLiners: [
+          "I chose ports-and-adapters because three frontends on one core is the worst kind of code to refactor into — best to design it that way day one.",
+          "Small models cheat on the tool-call format, so the harness has to be forgiving — that's what the fallback parser is.",
+          "The agent core has no imports of `rich`, `fastapi`, or `openai`. That's the property that lets me prove the architecture works.",
+          "Modes aren't a UI feature; they're a permission policy. They live in a pure function and the UI just toggles them.",
+          "Local model = guaranteed unlimited + free + private. Cloud is for when you want a bigger brain, with auto-fallback when it lets you down.",
+        ],
+        sources: [
+          "https://ollama.com/blog/openai-compatibility",
+          "https://docs.python.org/3/library/json.html#json.JSONDecoder.raw_decode",
+          "https://fastapi.tiangolo.com/advanced/websockets/",
+          "https://pyinstaller.org/en/stable/runtime-information.html",
+        ],
+      },
+    },
+  },
   {
     id: "cctv-vehicle-counter",
     slug: "cctv-vehicle-counter",
@@ -2822,6 +3255,26 @@ export const techs: Tech[] = [
       "https://sqlite.org/mostdeployed.html",
       "https://sqlite.org/famous.html",
       "https://en.wikipedia.org/wiki/SQLite",
+    ],
+  },
+  {
+    slug: "ollama",
+    name: "Ollama",
+    oneLiner:
+      "An open-source runtime that lets you run LLMs locally with a single command — `ollama run qwen3` and you're chatting with a model on your laptop.",
+    aliases: ["ollama"],
+    interestingFacts: [
+      "Ollama is essentially a **friendly wrapper around `llama.cpp`** — the Go layer adds a model registry (`pull` / `push` / `list` / `delete`), an HTTP API, GPU auto-detection, Modelfile config, and lifecycle management on top of llama.cpp's C/C++ inference kernels.",
+      "Out of the box, Ollama exposes an **OpenAI-compatible REST API on port 11434** — meaning thousands of existing OpenAI-SDK apps work locally just by pointing `OPENAI_BASE_URL` at `http://localhost:11434/v1`.",
+      "Ollama auto-handles **GGUF quantization, GPU offloading, and CUDA detection** — a developer never has to touch `n_gpu_layers`, Metal flags or quant levels for the common case.",
+      "Models are distributed via an **OCI-style registry** (like Docker images) — `ollama pull llama3` works the same way `docker pull nginx` does, including layered, deduplicated downloads.",
+      "Open-sourced in **2023** by Jeffrey Morgan and Michael Chiang, Ollama exploded to **100K+ GitHub stars** in under two years — the de-facto 'easy mode' for running local LLMs.",
+    ],
+    sources: [
+      "https://ollama.com/",
+      "https://github.com/ollama/ollama",
+      "https://ollama.com/blog/openai-compatibility",
+      "https://github.com/ggml-org/llama.cpp",
     ],
   },
 ];

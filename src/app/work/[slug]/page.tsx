@@ -11,6 +11,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { MetricsGrid } from "@/components/charts/MetricsGrid";
 import { CaseStudyGallery } from "@/components/work/CaseStudyGallery";
 import { Markdown } from "@/components/Markdown";
+import { InterviewPrep } from "@/components/interview-prep/InterviewPrep";
 import { findTechOrSkill } from "@/lib/lookup";
 
 async function loadDoc(docFile: string): Promise<string | null> {
@@ -78,6 +79,20 @@ export default async function CaseStudyPage({
   // Read the optional deep-dive Markdown at build time (static).
   const docContent = cs?.docFile ? await loadDoc(cs.docFile) : null;
 
+  // Interview-prep gating — author-only, never shipped to public.
+  // We strip it from the project object that crosses into client components
+  // (e.g. <CaseStudyGallery> uses "use client" → Next serialises its props
+  // into the RSC flight payload, which would otherwise leak the prep data
+  // into the static HTML even though the dev-gate hides it visually).
+  const isDev = process.env.NODE_ENV === "development";
+  const prep = isDev ? cs?.interviewPrep : undefined;
+  const safeProject = isDev
+    ? project
+    : {
+        ...project,
+        caseStudy: cs ? { ...cs, interviewPrep: undefined } : cs,
+      };
+
   return (
     <>
       <Navbar />
@@ -142,7 +157,7 @@ export default async function CaseStudyPage({
         {/* Media */}
         <div className="mt-14">
           <Reveal>
-            <CaseStudyGallery project={project} />
+            <CaseStudyGallery project={safeProject} />
           </Reveal>
         </div>
 
@@ -212,6 +227,27 @@ export default async function CaseStudyPage({
                 </h2>
                 <Reveal>
                   <Markdown>{docContent}</Markdown>
+                </Reveal>
+              </div>
+            ) : null}
+
+            {/* Interview prep is for the author's personal use only.
+                Dev-only render → completely absent from production SSG output.
+                Safe today because the case-study page and all <InterviewPrep>
+                components are SERVER components — the gated branch is dropped
+                at build time and the data never reaches the client bundle.
+                If any of those components becomes a client component, this
+                gate must be re-audited. */}
+            {prep ? (
+              <div className="border-t border-line py-10">
+                <h2 className="mb-2 flex flex-wrap items-baseline gap-3 font-mono text-xs uppercase tracking-[0.3em] text-accent">
+                  Interview prep
+                  <span className="rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px] tracking-[0.2em] text-accent">
+                    Dev only · not shipped
+                  </span>
+                </h2>
+                <Reveal>
+                  <InterviewPrep data={prep} />
                 </Reveal>
               </div>
             ) : null}
