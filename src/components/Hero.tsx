@@ -31,7 +31,7 @@ function Blob({ className }: { className: string }) {
   return (
     <div
       aria-hidden
-      className={`pointer-events-none absolute rounded-full blur-[110px] ${className}`}
+      className={`pointer-events-none absolute rounded-full blur-[60px] md:blur-[110px] ${className}`}
     />
   );
 }
