@@ -128,7 +128,7 @@ export default async function SkillPage({
             </Reveal>
           ) : (
             <p className="text-muted">
-              Cheatsheet coming soon — ping Claude to expand this skill.
+              Cheatsheet coming soon.
             </p>
           )}
         </div>

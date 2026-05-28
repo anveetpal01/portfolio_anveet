@@ -1486,7 +1486,6 @@ export const skills: Skill[] = [
   },
 
   /* ===== SCAFFOLDED SKILLS — meter + linked projects + placeholders ===== */
-  // TODO: ask Claude to expand any of these into a full cheatsheet + Q&A.
   {
     slug: "javascript",
     name: "JavaScript",
