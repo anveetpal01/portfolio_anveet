@@ -199,7 +199,7 @@ export const personal = {
         "Building clean backend, automation and scripting that holds up in production.",
     },
     {
-      title: "Computer Vision Engineer",
+      title: "Computer Vision",
       brief:
         "Real-time detection, tracking and counting from live camera streams.",
     },
